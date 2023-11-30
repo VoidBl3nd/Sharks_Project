@@ -1,0 +1,15 @@
+
+geojson==3.0.1
+geopandas==0.14.1
+numpy==1.23.5
+openpyxl==3.1.2
+pandas==1.5.3
+plotly==5.13.0
+seaborn==0.12.2
+searoute==1.2.2
+streamlit-plotly-events==0.0.6
+streamlit-plotly-mapboxEvents==0.0.4
+scikit-learn==1.2.2
+scgraph==1.4.0
+shapely==2.0.2
+geopy==2.4.0
