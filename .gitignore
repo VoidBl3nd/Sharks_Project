@@ -1,0 +1,12 @@
+/archive
+/*/archive
+
+/__pycache__
+/*/__pycache__
+
+/*.ipynb
+/*/*.ipynb
+
+/input_data
+/ETL
+/generated_data/*.xlsx
