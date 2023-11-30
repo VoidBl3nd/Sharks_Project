@@ -27,7 +27,7 @@ def plot_maritime_route(df_Coordinates_sequence:pd.DataFrame):
 #endregion
 
 #region -> CLUSTERS
-def define_clusters(coordinates:np.array, max_km_btwn_points_in_cluster:int|float = 50, min_cluster_size:int = 10) -> tuple[pd.DataFrame, pd.Series]:
+def define_clusters(coordinates:np.array, max_km_btwn_points_in_cluster = 50, min_cluster_size:int = 10) -> tuple[pd.DataFrame, pd.Series]:
     #Clustering algorithm
     kms_per_radian = 6371.0088
     epsilon = max_km_btwn_points_in_cluster / kms_per_radian
