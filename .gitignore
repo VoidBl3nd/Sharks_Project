@@ -7,6 +7,5 @@
 /*.ipynb
 /*/*.ipynb
 
-/input_data
 /ETL
 /generated_data/*.xlsx
