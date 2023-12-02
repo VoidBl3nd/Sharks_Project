@@ -10,39 +10,50 @@ var_list = get_session_state(['transformed_data/sharks','generated_data/business
 sharks, businness, tracking, activities = var_list[0], var_list[1].sort_values('date'), var_list[2], var_list[3]
 figs_height = 350
 
+#Initialize Streamlit
+st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
+st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
+
 st.title('Business Tracker')
 st.divider()
 c1,ch, c2 = st.columns([20,1,10])
 
-#Cumulative revenue
+#region -> Cumulative revenue
 fig = px.area(businness.assign(cumsum_revenue = businness.revenue_from_attacks.cumsum()), x = 'date',y = 'cumsum_revenue', title = 'Cumulative revenue', hover_data= {'date':False}, height = figs_height,
               color_discrete_sequence=px.colors.qualitative.Set3)
 fig.update_layout(hovermode="x unified")
 
 c2.plotly_chart(fig, use_container_width= True)
+#endregion
 
-#Cumulative representation of number of sharks caught vs number of attacks
+#region -> Cumulative representation of number of sharks caught vs number of attacks
 fig = px.line(businness.assign(cumsum_attacks = businness.number_of_successful_attacks.cumsum()), x = 'date', y = 'cumsum_attacks', title = 'Cumulative number of sharks caught vs recorded attacks ', hover_data= {'date':False}, height = figs_height,
               color_discrete_sequence=px.colors.qualitative.Set3)
 fig.add_trace(px.line(businness.assign(cumsum_caught = businness.number_of_sharks_caught.cumsum()), x = 'date', y = 'cumsum_caught', color_discrete_sequence=["#ff97ff"], hover_data= {'date':False}).data[0])
 fig.update_layout(hovermode="x unified")
 
 c2.plotly_chart(fig, use_container_width= True)
+#endregion
 
-#Successful Activities
+#region ->Successful Activities
 popular_activities = extract_popular_activities(activities)
-random_activities = popular_activities.sample(5)
-for activity in  random_activities.Activity.unique():
+popular_activities['color'] = px.colors.qualitative.Set3[:len(popular_activities)]
+print(popular_activities)
+random_activities = popular_activities.sample(5).reset_index(drop = True)
+for activity in random_activities.Activity.unique():
     random_activities.loc[random_activities.Activity == activity, 'occurences'] = np.random.randint(2,25)
 
 fig = px.pie(random_activities,
              values='occurences', names='Activity', title = 'Repartition of sucessful activities', height = figs_height,
-             color_discrete_sequence=px.colors.qualitative.Set3)
+             color_discrete_sequence=random_activities.sort_values('occurences',ascending = False).color)
+print(random_activities)
+print(random_activities.sort_values('occurences',ascending = True).color)#
 fig.update_traces(hoverinfo='label+percent+value', textinfo='label+percent', textfont_size=20, marker=dict(line=dict(color='#000000', width=1)))
 
 c2.plotly_chart(fig, use_container_width= True)
+#endregion
 
-#Tracking
+#region -> Tracking
 fig = px.scatter_geo(tracking.assign(object_type = tracking.id.str[:-2]), color = 'object_type', lat = 'latitude',lon = 'longitude', animation_frame='timeline',height = 800,
                      color_discrete_sequence=['rgb(255,255,179)', '#ff97ff'],
                      symbol='object_type', symbol_sequence=['arrow-right','circle'])
@@ -71,11 +82,10 @@ fig.layout.updatemenus = [{'buttons': [{'args': [None, {'frame': {'duration':
                                 'y': 0.09, #0.17, #y': 0.16,
                                 'yanchor': 'top'}]
 
-
+fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)')) #Color when zoom out of map
 fig.update_layout(margin=dict(l=0,r=0,b=0,t=0),paper_bgcolor="rgba(0, 0, 0, 0)") # Remove margin and make remaining background transparent
 fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.01,xanchor="right",x=0.97,
                               bgcolor="Grey", bordercolor="Black", borderwidth=2))
-
 
 fig.update_geos(
     #resolution=50,
@@ -94,6 +104,4 @@ c1a.markdown(f'\n{len(tracking[tracking.id.str.contains("shark")].id.unique())} 
 c1b.markdown(f'Number of cruises currently tracked :')
 c1b.markdown(f'{len(tracking[tracking.id.str.contains("cruise")].id.unique())} ⛵')
 
-print(tracking)
-
-print(px.colors.qualitative.Set3[1])
+#endregion
