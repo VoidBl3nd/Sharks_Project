@@ -8,6 +8,14 @@ var_list = get_session_state(['transformed_data/sharks', 'transformed_data/bodyp
 sharks, body_parts, activities = var_list[0], var_list[1], var_list[2]
 popular_activities = extract_popular_activities(activities)
 
+if '_start_year_' in st.session_state and '_end_year_' in st.session_state:
+    period_start = st.session_state['_start_year_']
+    period_end = st.session_state['_end_year_']
+else:
+    period_start = 2010
+    period_end = 2020
+sharks = sharks.query("date >= @period_start").query("date <= @period_end").reset_index(drop = True).copy()
+
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
