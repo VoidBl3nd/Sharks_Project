@@ -22,6 +22,7 @@ from backend.Sharks_utils_v1 import compute_maritime_route, define_clusters, cle
 #Display information : distance, stop steps
 
 sharks = get_session_state(['transformed_data/sharks'])[0]
+sharks = sharks[[col for col in sharks.columns if col not in ['coordinates']]]
 
 with st.sidebar:
     st.header('Sharky Cruise Builder')
@@ -113,12 +114,12 @@ with st.sidebar:
 
 chosen_route = []
 for idx, c in enumerate(selected_clusters[:-1]):
-    print(c)
+    #print(c)
     origin = (dfCenters.loc[dfCenters.cluster == c, 'lat'].values[0], dfCenters.loc[dfCenters.cluster == c, 'lon'].values[0])
     destination = (dfCenters.loc[dfCenters.cluster == selected_clusters[idx+1], 'lat'].values[0], dfCenters.loc[dfCenters.cluster == selected_clusters[idx+1], 'lon'].values[0])
     partial_route = compute_maritime_route(origin, destination)
 
-    print(len(partial_route))
+    #print(len(partial_route))
     chosen_route.append(partial_route)
 
 if len(chosen_route) > 0:
