@@ -60,6 +60,7 @@ else:
     if st.session_state['_selected_country_'] == 0:
         st.info('Please select a departure country in the Home page')
     else:
+        st.write(st.session_state)
         departure_country = st.session_state['_selected_country_']
         period_start = st.session_state['_start_year_']
         period_end = st.session_state['_end_year_']

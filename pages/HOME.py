@@ -64,3 +64,4 @@ with c3.expander('View historical data distribution:'):
     
     st.markdown(':orange[**Note**: *Only attacks in the selected period range will be showed across the application*]')
 
+st.write(st.session_state)
