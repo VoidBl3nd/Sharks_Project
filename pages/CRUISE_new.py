@@ -1,3 +1,4 @@
+import random
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -9,8 +10,8 @@ from backend.Sharks_streamlit_utils_v1 import get_session_state
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster
 cluster_minsize = 5 #5 #minimum_number_attacks_within_cluster
-min_cruise_stages = 2
-max_cruise_stages = 4
+#min_cruise_stages = 1
+#max_cruise_stages = 5
 dfPorts = pd.read_csv('input_data/ports.csv').filter(['Main Port Name','Country Code','Latitude','Longitude']).rename(columns = {'Main Port Name':'Port','Country Code':'Country'})
 
 var_list = get_session_state(['transformed_data/sharks'])
@@ -60,10 +61,10 @@ else:
     if st.session_state['_selected_country_'] == 0:
         st.info('Please select a departure country in the Home page')
     else:
-        st.write(st.session_state)
         departure_country = st.session_state['_selected_country_']
         period_start = st.session_state['_start_year_']
         period_end = st.session_state['_end_year_']
+        cruise_stages = st.session_state['_number_activities_']
         if dfPorts.query('Country == @departure_country').empty:
             st.warning("Please select another country. This one doesn't have any harbor we can start the cruise with.")
         else:
@@ -98,7 +99,7 @@ else:
             #Pick random number of clusters
             #-------------------------------------------------------------
             selected_clusters = ['Departure']
-            nbr_clusters_to_visit = np.random.randint(low = min_cruise_stages, high = max_cruise_stages)
+            nbr_clusters_to_visit = cruise_stages #np.random.randint(low = min_cruise_stages, high = max_cruise_stages)
             selected_clusters.extend(dfCenters.sample(nbr_clusters_to_visit).cluster.tolist())
 
             #Generate the cruise's route
@@ -139,6 +140,24 @@ else:
             
             #Activities
             #-------------------------------------------------------------
+            activities_color_map = {'Departure':'rgb(1,1,1)',
+                                    'surfing':'rgb(141,211,199)','swimming':'rgb(255,255,179)','fishing':'rgb(190,186,218)','diving':'rgb(251,128,114)',
+                                    'spearfishing':'rgb(128,177,211)','bathing':'rgb(253,180,98)','wading':'rgb(179,222,105)','scuba':'rgb(252,205,229)',
+                                    'snorkeling':'rgb(217,217,217)','kayaking':'rgb(188,128,189)',}
+            activities_clusters = (selected_clusters).copy()
+            dfActivities_locations = dfCenters.query('cluster.isin(@activities_clusters)')
+            activities_types = st.session_state['_type_activities_']
+            dfActivities_locations['activity'] = ""
+            for idx, row in dfActivities_locations.iterrows():
+                dfActivities_locations.loc[idx,'activity'] = random.choice(activities_types)
+            dfActivities_locations.loc[0,'activity'] = 'Departure'
+            
+            for activity in dfActivities_locations.activity.unique().tolist():
+                fig.add_trace(go.Scattermapbox(lat = dfActivities_locations.query('activity == @activity').lat,
+                                                    lon = dfActivities_locations.query('activity == @activity').lon,
+                                                    mode = 'markers',
+                                                    marker = dict(color = activities_color_map[dfActivities_locations.query('activity == @activity').activity.unique().tolist()[0]],size = 20),
+                                                    name = activity))
 
             #History
             #-------------------------------------------------------------

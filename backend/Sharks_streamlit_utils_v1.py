@@ -104,6 +104,6 @@ def render_activities_chart(df):
 def initialize_state_filters():
     """Initializes all Session State variables"""
 
-    for session_name in ['_start_year_','_end_year_']:
+    for session_name in ['_start_year_','_end_year_','_number_activities_','_type_activities_']:
         if session_name not in st.session_state:
             st.session_state[session_name] = 0

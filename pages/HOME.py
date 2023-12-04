@@ -36,8 +36,8 @@ with st.expander('Departure country',expanded = True):
 st.header(':blue[Step 2 :] Tweak cruise  parameters')
 c1,c2,c3 = st.columns([15,2,40])
 popular_activites = extract_popular_activities(activities)
-c1.number_input('Cruise duration', min_value=1, placeholder= 'Duration in days',value = None)
-c1.multiselect('Activities', options= popular_activites.Activity.unique().tolist())
+number_activities = c1.number_input('Number of activities', min_value=1, max_value=5, placeholder= 'Number between 1 and 5',value = None)
+type_activities = c1.multiselect('Types of activities', options= popular_activites.Activity.unique().tolist())
 #c3.slider('Historical attacks period (included)',min_value= int(sharks.date.dt.year.min()), max_value= int(sharks.date.dt.year.max()), value = [2000,2019])
 #period_start = c1.date_input('Historical Period start', min_value= datetime(int(sharks.date.dt.year.min()),1,1), max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2000,1,1), format = 'DD-MM-YYYY')
 #period_end = c1.date_input('Historical Period end', min_value= period_start, max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2019,1,1), format = 'DD-MM-YYYY')
@@ -47,6 +47,8 @@ period_end = c1.selectbox('Historical Period end', options=[*range(period_start,
 initialize_state_filters()
 st.session_state['_start_year_'] = period_start
 st.session_state['_end_year_'] = period_end
+st.session_state['_number_activities_'] = number_activities
+st.session_state['_type_activities_'] = type_activities
 
 
 
@@ -63,5 +65,3 @@ with c3.expander('View historical data distribution:'):
 
     
     st.markdown(':orange[**Note**: *Only attacks in the selected period range will be showed across the application*]')
-
-st.write(st.session_state)
