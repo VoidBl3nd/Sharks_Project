@@ -4,7 +4,7 @@ import streamlit as st
 import plotly.express as px
 
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities
+from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, order_and_hide_pages
 
 var_list = get_session_state(['transformed_data/sharks','generated_data/business','generated_data/tracking', 'transformed_data/activities_words'])
 sharks, businness, tracking, activities = var_list[0], var_list[1].sort_values('date'), var_list[2], var_list[3]
@@ -13,6 +13,7 @@ figs_height = 350
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
+order_and_hide_pages()
 
 st.title('Business Tracker')
 st.divider()
@@ -74,18 +75,18 @@ fig.layout.updatemenus = [{'buttons': [{'args': [None, {'frame': {'duration':
                                              'method': 'animate'},
                                             ],
                                 'direction': 'left',
-                                'pad': {'r': 10, 't': 70}, #pad': {'r': 10, 't': 70},
+                                #'pad': {'r': 10, 't': 70}, #pad': {'r': 10, 't': 70},
                                 'showactive': False,
-                                'type': 'buttons',
-                                'x': 0.115, #0.095, #'x': 0.29,
-                                'xanchor': 'right',
-                                'y': 0.09, #0.17, #y': 0.16,
-                                'yanchor': 'top'}]
+                                'type': 'buttons',}]
+                                #'x': 0.115, #0.095, #'x': 0.29,
+                                #'xanchor': 'right',
+                                #'y': 0.09, #0.17, #y': 0.16,
+                                #'yanchor': 'top'}]
 
 fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)')) #Color when zoom out of map
 fig.update_layout(margin=dict(l=0,r=0,b=0,t=0),paper_bgcolor="rgba(0, 0, 0, 0)") # Remove margin and make remaining background transparent
-fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.01,xanchor="right",x=0.97,
-                              bgcolor="Grey", bordercolor="Black", borderwidth=2))
+#fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.01,xanchor="right",x=0.97,
+#                              bgcolor="Grey", bordercolor="Black", borderwidth=2))
 
 fig.update_geos(
     #resolution=50,

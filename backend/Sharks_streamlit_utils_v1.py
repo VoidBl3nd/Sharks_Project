@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from st_pages import Page, show_pages, add_page_title, hide_pages
 from streamlit_plotly_events import plotly_events
 
 def get_session_state(var_list:list):
@@ -107,3 +108,18 @@ def initialize_state_filters():
     for session_name in ['_start_year_','_end_year_','_number_activities_','_type_activities_']:
         if session_name not in st.session_state:
             st.session_state[session_name] = 0
+
+def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage"]):
+    add_page_title()
+    show_pages(
+        [
+            Page("pages/HOME.py", "Generate cruise", "⛵"),
+            Page("pages/PRACTICAL.py", "Data explorer", "🗺️"),
+            Page("pages/TRACKING.py", "Business tracker", "📈"),
+
+            Page("pages/CRUISE_new.py", "Cruise visualization", "📈"),
+            Page("Sharks_streamlit_v3.py", "Homepage", "📈"),
+        ]
+    )
+
+    hide_pages(hidden_pages)

@@ -9,3 +9,5 @@
 
 /ETL
 /generated_data/*.xlsx
+
+/venv

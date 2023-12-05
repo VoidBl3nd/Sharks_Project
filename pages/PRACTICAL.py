@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, build_activities_map, render_activities_chart, initialize_state_activities
+from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, build_activities_map, render_activities_chart, initialize_state_activities, order_and_hide_pages
 
 var_list = get_session_state(['transformed_data/sharks', 'transformed_data/bodyparts_words', 'transformed_data/activities_words'])
 sharks, body_parts, activities = var_list[0], var_list[1], var_list[2]
@@ -19,6 +19,7 @@ sharks = sharks.query("date >= @period_start").query("date <= @period_end").rese
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
+order_and_hide_pages()
 
 st.title('Historical data information',) # #Practical information about past attacks
 st.divider()
@@ -56,7 +57,7 @@ c1.plotly_chart(fig, use_container_width= True)
 #endregion
 
 #region -> Popularity of body parts
-fig = px.bar(body_parts.drop(body_parts[body_parts.injury_term.isin(['left','right'])].index).sort_values('occurences',ascending = False).head(12),y = 'injury_term',x = 'occurences', orientation = 'h', title = 'Appearance of the different "Body part" terms in the Injury attribute',
+fig = px.bar(body_parts.assign(injury_term = body_parts.injury_term.str.capitalize()).drop(body_parts[body_parts.injury_term.isin(['left','right'])].index).sort_values('occurences',ascending = False).head(12),y = 'injury_term',x = 'occurences', orientation = 'h', title = 'Appearance of the different "Body part" terms in the Injury attribute',
              color= 'injury_term', color_discrete_sequence=[px.colors.qualitative.Set3[0]],)
 #fig.update_layout(yaxis={'categoryorder':'total ascending'})
 fig.update_layout(showlegend=False)

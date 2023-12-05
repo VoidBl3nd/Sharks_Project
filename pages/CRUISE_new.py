@@ -4,9 +4,10 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_extras.switch_page_button import switch_page 
 
 from backend.Sharks_utils_v1 import define_clusters, clean_clusters_centerpoints, compute_maritime_route
-from backend.Sharks_streamlit_utils_v1 import get_session_state
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster
 cluster_minsize = 5 #5 #minimum_number_attacks_within_cluster
@@ -21,10 +22,11 @@ sharks['coordinates'] = sharks.filter(['latitude', 'longitude']).values.tolist()
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
+order_and_hide_pages()
 
 def render_mapbox_cruise(sharks_selection):
     style_dict = {'map':"open-street-map",'white':"carto-positron",'dark':"carto-darkmatter",'terrain':"stamen-terrain",'bw':"stamen-toner",'realistic':"white-bg"}
-    mapboxstyle = 'map' #['map','white','dark','terrain','bw','realistic'])
+    mapboxstyle = 'white' #['map','white','dark','terrain','bw','realistic'])
 
     fig = px.scatter_mapbox(sharks_selection.dropna(subset = 'coordinates'),
                     lat='latitude',
@@ -36,7 +38,7 @@ def render_mapbox_cruise(sharks_selection):
                     #hover_data= {'cluster':False, 'cluster_content':True, 'latitude':':.2f','longitude':':.2f'},
                     height= 1200,
                     #template= 'plotly_dark',
-                    zoom = 1.6
+                    zoom = 1.45
                     )
 
     if style_dict[mapboxstyle] == "white-bg":
@@ -50,7 +52,7 @@ def render_mapbox_cruise(sharks_selection):
     fig.update_layout(mapbox_style=style_dict[mapboxstyle],mapbox_center= {'lat':0,'lon':0})
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-    fig.update_traces(marker=dict(size=12,),
+    fig.update_traces(marker=dict(size=7,),
                     selector=dict(mode='markers'))
     
     return fig
@@ -74,7 +76,17 @@ else:
             departure_port = dfPorts.query('Country == @departure_country').sample(1)
             departure_lat = departure_port.Latitude.values[0]
             departure_lon = departure_port.Longitude.values[0]
-            st.success(f'Departure Harbor : **{departure_port.Port.values[0]}** ({departure_country})')
+
+            c1,c2,c3 = st.columns(3)
+            c1.info(f'Parameters : \n- **{cruise_stages}** activities among :  {",".join(st.session_state["_type_activities_"])} \n - Cruise path based on data from *{period_start}* to *{period_end}* ')
+            c2.success(f'Departure Harbor :\n- **{departure_port.Port.values[0]}** ({departure_country})')
+            if c3.button('Change parameters',type = 'secondary', use_container_width= True):
+                switch_page('Generate cruise')
+
+
+            #c3.write('t')
+            c3.button('Generate an alternative cruise', type = 'primary',use_container_width= True)
+
 
             #Filter out data not in study period & extract coordinates for clustering analysis
             #-------------------------------------------------------------
@@ -130,17 +142,19 @@ else:
             #Build the Map
             #-------------------------------------------------------------
             fig = render_mapbox_cruise(sharks_selection)
+            fig.update_layout(height=700)
             
             #Cruise
             #-------------------------------------------------------------
             fig.add_trace(go.Scattermapbox(lat = waypoints.lat,
                                                 lon = lons,
                                                 mode = 'lines',
-                                                line = dict(color = 'black')))
+                                                line = dict(color = 'grey'),
+                                                name = 'CRUISE'))
             
             #Activities
             #-------------------------------------------------------------
-            activities_color_map = {'Departure':'rgb(1,1,1)',
+            activities_color_map = {'Departure':'yellow',
                                     'surfing':'rgb(141,211,199)','swimming':'rgb(255,255,179)','fishing':'rgb(190,186,218)','diving':'rgb(251,128,114)',
                                     'spearfishing':'rgb(128,177,211)','bathing':'rgb(253,180,98)','wading':'rgb(179,222,105)','scuba':'rgb(252,205,229)',
                                     'snorkeling':'rgb(217,217,217)','kayaking':'rgb(188,128,189)',}
@@ -153,11 +167,20 @@ else:
             dfActivities_locations.loc[0,'activity'] = 'Departure'
             
             for activity in dfActivities_locations.activity.unique().tolist():
+                #Border
                 fig.add_trace(go.Scattermapbox(lat = dfActivities_locations.query('activity == @activity').lat,
                                                     lon = dfActivities_locations.query('activity == @activity').lon,
                                                     mode = 'markers',
-                                                    marker = dict(color = activities_color_map[dfActivities_locations.query('activity == @activity').activity.unique().tolist()[0]],size = 20),
+                                                    marker = dict(color = 'black',size = 26,),
+                                                    name = activity,
+                                                    showlegend = False))
+                #Activity
+                fig.add_trace(go.Scattermapbox(lat = dfActivities_locations.query('activity == @activity').lat,
+                                                    lon = dfActivities_locations.query('activity == @activity').lon,
+                                                    mode = 'markers',
+                                                    marker = dict(color = activities_color_map[dfActivities_locations.query('activity == @activity').activity.unique().tolist()[0]],size = 20,),
                                                     name = activity))
+                
 
             #History
             #-------------------------------------------------------------
