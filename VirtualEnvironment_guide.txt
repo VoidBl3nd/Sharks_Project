@@ -1,0 +1,14 @@
+# Création venv
+----------------------------------------------
+cd [Work_directory]
+py -m venv venv
+
+# Installation dépendances
+----------------------------------------------
+pip freeze
+pip install -r requirements.txt
+
+# Activer au venv / le quitter
+----------------------------------------------
+.\venv\Scripts\Activate.ps1
+deactivate
