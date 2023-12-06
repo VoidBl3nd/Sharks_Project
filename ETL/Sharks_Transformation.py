@@ -21,6 +21,10 @@ sharks['date'] = pd.to_datetime(sharks['Case Number'].str.replace("(?i)[^0-9]",'
 
 #Considère les records ayant des case numbers différents comme non fiables
 sharks.loc[sharks['Case Number'] != sharks['Case-Number'],'date'] = pd.NaT
+#Rempli tout de même les champs year quand c'est possible
+sharks['year'] = sharks.date.dt.year.fillna(0).astype(int)
+sharks.loc[(sharks.date.isna()) & (sharks['Case Number'].str[:4].str.isnumeric()),'year'] = sharks.loc[(sharks.date.isna()) & (sharks['Case Number'].str[:4].str.isnumeric()), 'Case Number'].str[:4].astype(int)
+sharks.loc[sharks.year < 1700,'year'] = 0
 
 #Création du champ "time" sur base du champ "Time"
 #--------------------------------------------------------------------------------------
@@ -30,8 +34,7 @@ sharks['time'] = pd.to_datetime(sharks.Time.str.replace("(?i)[^0-9]",'', regex= 
                                 errors = 'coerce').dt.time
 
 #Après avoir extrait les dates, certaines colonnes ne sont plus nécessaires et peuvent être remplacées.
-sharks = (sharks.drop(columns = ['Case Number','Date', 'Year','Case-Number', 'Time'])
-                .assign(year = sharks.date.dt.year.fillna(0).astype(int)))
+sharks = (sharks.drop(columns = ['Case Number','Date', 'Year','Case-Number', 'Time']))
 sharks = sharks[['date','year','time'] + [ col for col in sharks.columns if col not in ['time','date','year'] ] ].copy() #copy else, may return a (dead) view which may trigger SettingWithCopyWarning (cfr df._is_copy)
 
 #Nettoyage du champ "Sex"
