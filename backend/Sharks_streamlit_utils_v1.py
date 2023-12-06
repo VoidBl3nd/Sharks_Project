@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from st_pages import Page, show_pages, add_page_title, hide_pages
+from st_pages import Page, show_pages, add_page_title, hide_pages, Section
 from streamlit_plotly_events import plotly_events
 
 def get_session_state(var_list:list):
@@ -109,18 +109,21 @@ def initialize_state_filters():
         if session_name not in st.session_state:
             st.session_state[session_name] = 0
 
-def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise bookmarks"]):
+def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise save"]):
     add_page_title()
     show_pages(
         [
-            Page("pages/HOME.py", "Generate cruise", "⛵"),
-            Page("pages/PRACTICAL.py", "Data explorer", "🗺️"),
-            Page("pages/TRACKING.py", "Business tracker", "📈"),
-
-            Page("pages/CRUISE_new.py", "Cruise visualization", "📈"),
-            Page("pages/Cruise_bookmarks.py", "Cruise bookmarks", "🔖"),
-            Page("pages/Cruise_save.py", "Cruise save", "💾"),
             Page("Sharks_streamlit_v3.py", "Homepage", "📈"),
+
+            Section('Cruise','⛵'),
+            Page("pages/HOME.py", "Generate", "⚙️"),
+            Page("pages/CRUISE_new.py", "Cruise visualization", "🗺️"),
+            Page("pages/Cruise_save.py", "Cruise save", "💾"),
+            Page("pages/Cruise_bookmarks.py", "Bookmarks", "🔖"),
+
+            Page("pages/PRACTICAL.py", "Data explorer", "🔎", in_section=False),
+
+            Page("pages/TRACKING.py", "Business tracker", "📈", in_section=False),  
         ]
     )
 

@@ -78,11 +78,11 @@ else:
             departure_lat = departure_port.Latitude.values[0]
             departure_lon = departure_port.Longitude.values[0]
 
-            c1,c2,c3,c4 = st.columns([2,2,2,1])
+            c1,c2,c3,c4,c5,c6 = st.columns([5,5,5,1,2,1])
             c1.info(f'Parameters : \n- **{cruise_stages}** activities among :  {",".join(st.session_state["_type_activities_"])} \n - Cruise path based on data from *{period_start}* to *{period_end}* ')
             c2.success(f'Departure Harbor :\n- **{departure_port.Port.values[0]}** ({departure_country})')
             if c3.button('Change parameters',type = 'secondary', use_container_width= True):
-                switch_page('Generate cruise')
+                switch_page('Generate')
 
             #c3.write('t')
             c3.button('🔄 Generate an alternative cruise', type = 'primary',use_container_width= True)
@@ -195,9 +195,7 @@ else:
             st.session_state['_cruise_bookmarks_']['temp_save']['cruise_stages'] = st.session_state['_number_activities_']
             st.session_state['_cruise_bookmarks_']['temp_save']['waypoints'] = waypoints
             st.session_state['_cruise_bookmarks_']['temp_save']['dfActivities_locations'] = dfActivities_locations
-            with c4:
-                c4a,c4b =st.columns(2)
-                if c4a.button('💾Save'):
-                    switch_page('Cruise save')
-                if c4b.button('🔖Bookmarks'):
-                    switch_page('Cruise bookmarks')
+            if c5.button('💾Save', use_container_width=True):
+                switch_page('Cruise save')
+            if c5.button('🔖Bookmarks', use_container_width=True):
+                switch_page('Bookmarks')

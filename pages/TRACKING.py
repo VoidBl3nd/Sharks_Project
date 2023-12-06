@@ -85,24 +85,24 @@ fig.layout.updatemenus = [{'buttons': [{'args': [None, {'frame': {'duration':
 
 fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)')) #Color when zoom out of map
 fig.update_layout(margin=dict(l=0,r=0,b=0,t=0),paper_bgcolor="rgba(0, 0, 0, 0)") # Remove margin and make remaining background transparent
-#fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.01,xanchor="right",x=0.97,
-#                              bgcolor="Grey", bordercolor="Black", borderwidth=2))
+#fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.01,xanchor="right",x=0.97, bgcolor="Grey", bordercolor="Black", borderwidth=2))
 
-fig.update_geos(
-    #resolution=50,
-    showcoastlines=True, coastlinecolor = '#afe3e0', #coastlinecolor="RebeccaPurple",
-    showland=True, landcolor='#76b0a6',#"#3b3942", #141,211,199
-    showocean=True, oceancolor= '#50545c',#"Grey", 
-    #showlakes=True, lakecolor="Blue",
-    #showrivers=True, rivercolor="Blue"
-)
+fig.update_geos(showcoastlines=True, coastlinecolor = '#afe3e0',
+                showland=True, landcolor='#76b0a6',
+                showocean=True, oceancolor= '#50545c', )
+
+c1a,c1b,c1c = c1.columns((3))
+#c1a.markdown(f'Number of sharks currently tracked :')
+#c1a.markdown(f'\n{len(tracking[tracking.id.str.contains("shark")].id.unique())} 🦈')
+#c1b.markdown(f'Number of cruises currently tracked :')
+#c1b.markdown(f'{len(tracking[tracking.id.str.contains("cruise")].id.unique())} ⛵')
+#c1c.markdown(f'Total Revenue :')
+#c1c.markdown(f'{businness.revenue_from_attacks.sum()} 💲')
+
+c1a.metric(f'Number of sharks currently tracked :',value = f'{len(tracking[tracking.id.str.contains("shark")].id.unique())} 🦈')
+c1b.metric(f'Number of cruises currently tracked :', value = f'{len(tracking[tracking.id.str.contains("cruise")].id.unique())} ⛵')
+c1c.metric(f'Total Revenue :',value = f'{int(businness.revenue_from_attacks.sum()/1000)}k 💲')
 
 c1.header('Sharks & Cruise realtime tracking')
 c1.plotly_chart(fig, use_container_width= True)
-c1a,c1b,c1c = c1.columns((3))
-c1a.markdown(f'Number of sharks currently tracked :')
-c1a.markdown(f'\n{len(tracking[tracking.id.str.contains("shark")].id.unique())} 🦈')
-c1b.markdown(f'Number of cruises currently tracked :')
-c1b.markdown(f'{len(tracking[tracking.id.str.contains("cruise")].id.unique())} ⛵')
-
 #endregion

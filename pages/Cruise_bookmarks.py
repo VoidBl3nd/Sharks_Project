@@ -15,7 +15,7 @@ var_list = get_session_state(['transformed_data/sharks', 'transformed_data/activ
 sharks, activities = var_list[0], var_list[1]
 
 #Initialize Streamlit
-st.set_page_config(page_title="Sharky cruise builder", layout = "centered", page_icon= '🦈') # must happen before any streamlit code /!\
+st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
 
