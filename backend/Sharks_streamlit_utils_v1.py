@@ -109,7 +109,7 @@ def initialize_state_filters():
         if session_name not in st.session_state:
             st.session_state[session_name] = 0
 
-def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage"]):
+def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise bookmarks"]):
     add_page_title()
     show_pages(
         [
@@ -118,8 +118,17 @@ def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage"]):
             Page("pages/TRACKING.py", "Business tracker", "📈"),
 
             Page("pages/CRUISE_new.py", "Cruise visualization", "📈"),
+            Page("pages/Cruise_bookmarks.py", "Cruise bookmarks", "🔖"),
+            Page("pages/Cruise_save.py", "Cruise save", "💾"),
             Page("Sharks_streamlit_v3.py", "Homepage", "📈"),
         ]
     )
 
     hide_pages(hidden_pages)
+
+def initialize_state_saves():
+    """Initializes all Session State variables"""
+
+    for session_name in ['_cruise_bookmarks_',]:
+        if session_name not in st.session_state:
+            st.session_state[session_name] = {}

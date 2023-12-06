@@ -43,8 +43,9 @@ type_activities = c1.multiselect('Types of activities', options= popular_activit
 #c3.slider('Historical attacks period (included)',min_value= int(sharks.date.dt.year.min()), max_value= int(sharks.date.dt.year.max()), value = [2000,2019])
 #period_start = c1.date_input('Historical Period start', min_value= datetime(int(sharks.date.dt.year.min()),1,1), max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2000,1,1), format = 'DD-MM-YYYY')
 #period_end = c1.date_input('Historical Period end', min_value= period_start, max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2019,1,1), format = 'DD-MM-YYYY')
-period_start = c1.selectbox('Historical Period start', options=[*range(int(sharks.date.dt.year.min()), int(sharks.date.dt.year.max()+1),1)], index = 2019-1703-9,placeholder='Start year (included)...')
-period_end = c1.selectbox('Historical Period end', options=[*range(period_start, int(sharks.date.dt.year.max()+1),1)], index = len([*range(period_start, int(sharks.date.dt.year.max()+1),1)])-1, placeholder='End year (included)...')+1
+minyear = 1700
+period_start = c1.selectbox('Historical Period start', options=[*range(minyear, int(sharks.year.max()+1),1)], index = 2019-minyear-9,placeholder='Start year (included)...')
+period_end = c1.selectbox('Historical Period end', options=[*range(period_start, int(sharks.year.max()+1),1)], index = len([*range(period_start, int(sharks.year.max()+1),1)])-1, placeholder='End year (included)...')+1
 
 initialize_state_filters()
 st.session_state['_start_year_'] = period_start
@@ -52,9 +53,7 @@ st.session_state['_end_year_'] = period_end
 st.session_state['_number_activities_'] = number_activities
 st.session_state['_type_activities_'] = type_activities
 
-
-
-current_selection_size = len(sharks.query("date >= @period_start").query("date <= @period_end"))
+current_selection_size = len(sharks.query("year >= @period_start").query("year <= @period_end"))
 c1.markdown(f'⚠️*Selected period contains, **{current_selection_size}** attacks (**{current_selection_size/len(sharks):.1%}** of the dataset)*') #➡️
 if c1.button('Generate Cruise',type = 'primary', use_container_width=True,):
     if type_activities == [] or number_activities == None or st.session_state['_selected_country_'] == 0:
@@ -65,7 +64,7 @@ if c1.button('Generate Cruise',type = 'primary', use_container_width=True,):
 c3.markdown('###')
 with c3.expander('View historical data distribution:'):
     #Distribution of attacks over the years (excluding unformatted dates)
-    year_dist = sharks.assign(year = sharks.date.dt.year).groupby(['year']).agg(nbr_attacks = ('date','count')) #sharks['date'].dt.year.value_counts().reset_index()
+    year_dist = sharks.query('year >= @minyear').groupby(['year']).agg(nbr_attacks = ('date','count')) #sharks['date'].dt.year.value_counts().reset_index()
     fig = px.bar(year_dist , y='nbr_attacks',title = 'Distribution of the number of sharks attacks over the years', height = 350)
     st.plotly_chart(fig, use_container_width= True)
 

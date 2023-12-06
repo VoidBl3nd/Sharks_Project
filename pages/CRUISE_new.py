@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from streamlit_extras.switch_page_button import switch_page 
 
 from backend.Sharks_utils_v1 import define_clusters, clean_clusters_centerpoints, compute_maritime_route
-from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster
 cluster_minsize = 5 #5 #minimum_number_attacks_within_cluster
@@ -23,6 +23,7 @@ sharks['coordinates'] = sharks.filter(['latitude', 'longitude']).values.tolist()
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
+initialize_state_saves()
 
 def render_mapbox_cruise(sharks_selection):
     style_dict = {'map':"open-street-map",'white':"carto-positron",'dark':"carto-darkmatter",'terrain':"stamen-terrain",'bw':"stamen-toner",'realistic':"white-bg"}
@@ -77,20 +78,19 @@ else:
             departure_lat = departure_port.Latitude.values[0]
             departure_lon = departure_port.Longitude.values[0]
 
-            c1,c2,c3 = st.columns(3)
+            c1,c2,c3,c4 = st.columns([2,2,2,1])
             c1.info(f'Parameters : \n- **{cruise_stages}** activities among :  {",".join(st.session_state["_type_activities_"])} \n - Cruise path based on data from *{period_start}* to *{period_end}* ')
             c2.success(f'Departure Harbor :\n- **{departure_port.Port.values[0]}** ({departure_country})')
             if c3.button('Change parameters',type = 'secondary', use_container_width= True):
                 switch_page('Generate cruise')
 
-
             #c3.write('t')
-            c3.button('Generate an alternative cruise', type = 'primary',use_container_width= True)
+            c3.button('🔄 Generate an alternative cruise', type = 'primary',use_container_width= True)
 
 
             #Filter out data not in study period & extract coordinates for clustering analysis
             #-------------------------------------------------------------
-            sharks_selection = sharks.query("date >= @period_start").query("date <= @period_end").copy()
+            sharks_selection = sharks.query("year >= @period_start").query("year <= @period_end").copy()
             selected_attacks_coordinates = sharks_selection.filter(['latitude', 'longitude']).dropna().values
 
             #Generate clusters & their center point
@@ -180,16 +180,24 @@ else:
                                                     mode = 'markers',
                                                     marker = dict(color = activities_color_map[dfActivities_locations.query('activity == @activity').activity.unique().tolist()[0]],size = 20,),
                                                     name = activity))
-                
-
-            #History
-            #-------------------------------------------------------------
-
-            #Export Cruise
-            #-------------------------------------------------------------
 
 
             #Render the map & generate
             st.plotly_chart(fig, use_container_width= True)
 
-            st.sidebar.button('Generate another Cruise', type = 'primary')
+
+            #Export Cruise / History
+            #-------------------------------------------------------------
+            st.session_state['_cruise_bookmarks_']['temp_save'] = dict()
+            st.session_state['_cruise_bookmarks_']['temp_save']['departure_country'] = st.session_state['_selected_country_']
+            st.session_state['_cruise_bookmarks_']['temp_save']['period_start'] = st.session_state['_start_year_']
+            st.session_state['_cruise_bookmarks_']['temp_save']['period_end'] = st.session_state['_end_year_']
+            st.session_state['_cruise_bookmarks_']['temp_save']['cruise_stages'] = st.session_state['_number_activities_']
+            st.session_state['_cruise_bookmarks_']['temp_save']['waypoints'] = waypoints
+            st.session_state['_cruise_bookmarks_']['temp_save']['dfActivities_locations'] = dfActivities_locations
+            with c4:
+                c4a,c4b =st.columns(2)
+                if c4a.button('💾Save'):
+                    switch_page('Cruise save')
+                if c4b.button('🔖Bookmarks'):
+                    switch_page('Cruise bookmarks')

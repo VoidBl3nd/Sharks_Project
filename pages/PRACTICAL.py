@@ -14,7 +14,7 @@ if '_start_year_' in st.session_state and '_end_year_' in st.session_state:
 else:
     period_start = 2010
     period_end = 2020
-sharks = sharks.query("date >= @period_start").query("date <= @period_end").reset_index(drop = True).copy()
+sharks = sharks.query("year >= @period_start").query("year <= @period_end").reset_index(drop = True).copy()
 
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
