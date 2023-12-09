@@ -2,27 +2,56 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, build_activities_map, render_activities_chart, initialize_state_activities, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, build_activities_map, render_activities_chart, initialize_state_activities, order_and_hide_pages, activities_mapping
 from backend.etl_utils import extract_popular_activities, extract_activities, extract_body_parts
 
 var_list = get_session_state(['transformed_data/sharks'])
 sharks = var_list[0]
 
-if '_start_year_' in st.session_state and '_end_year_' in st.session_state:
-    period_start = st.session_state['_start_year_']
-    period_end = st.session_state['_end_year_']
-else:
-    period_start = 2010
-    period_end = 2020
-sharks = sharks.query("year >= @period_start").query("year <= @period_end").reset_index(drop = True).copy()
-activities = extract_activities(sharks)
-popular_activities = extract_popular_activities(activities)
-body_parts = extract_body_parts(sharks)
-
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
+
+#if '_start_year_sidebar_' in st.session_state and '_end_year_sidebar_' in st.session_state:
+minyear = 1700
+
+with st.sidebar:
+    st.subheader(':blue[Select a period range:]')
+    period_start = st.selectbox('Historical Period start', options=[*range(minyear, int(sharks.year.max()+1),1)], index = 2019-minyear-9,placeholder='Start year (included)...')
+    period_end = st.selectbox('Historical Period end', options=[*range(period_start, int(sharks.year.max()+1),1)], index = len([*range(period_start, int(sharks.year.max()+1),1)])-1, placeholder='End year (included)...')+1
+    current_selection_size = len(sharks.query("year >= @period_start").query("year <= @period_end"))
+    st.divider()
+    st.info(f'Selected period contains: \n\n **{current_selection_size}** attacks (**{current_selection_size/len(sharks):.1%}** of the dataset) :orange[**Note:** only attacks in the selected period will be showed within the visualizations]', icon = "ℹ️")
+    with st.expander('View historical data distribution:'):
+        #Distribution of attacks over the years (excluding unformatted dates)
+        year_dist = sharks.query('year >= @minyear').groupby(['year']).agg(nbr_attacks = ('date','count')) #sharks['date'].dt.year.value_counts().reset_index()
+        fig = px.bar(year_dist , y='nbr_attacks',title = 'Distribution of the number of sharks attacks over the years', height = 350)
+        st.plotly_chart(fig, use_container_width= True)
+
+initial_update = False
+if '_start_year_sidebar_' not in st.session_state or  '_end_year_sidebar_' not in st.session_state:
+    st.session_state['_start_year_sidebar_'] = period_start
+    st.session_state['_end_year_sidebar_'] = period_end
+    initial_update = True
+    
+#If changed year value, recompute df & store them
+if initial_update or (st.session_state['_start_year_sidebar_'] != period_start or st.session_state['_end_year_sidebar_'] != period_end):
+    with st.spinner('Updating and filtering data based on selected years...'):
+        sharks = sharks.query("year >= @period_start").query("year <= @period_end").reset_index(drop = True).copy()
+        activities = extract_activities(sharks)
+        popular_activities = extract_popular_activities(activities)
+        body_parts = extract_body_parts(sharks)
+        #Store the values:
+        st.session_state['_popular_activities_'] = popular_activities
+        st.session_state['_body_parts_'] = body_parts
+        st.session_state['_start_year_sidebar_'] = period_start
+        st.session_state['_end_year_sidebar_'] = period_end
+#Else use the stored values
+else:
+    sharks = sharks.query("year >= @period_start").query("year <= @period_end").reset_index(drop = True).copy()
+    popular_activities = st.session_state['_popular_activities_']
+    body_parts = st.session_state['_body_parts_']
 
 #st.title('Historical data information',) # #Practical information about past attacks
 st.divider()
@@ -73,7 +102,7 @@ with st.expander('Interactive activities charts', expanded= True):
     c1,c2 = st.columns(2)
     
     with c1:
-        render_activities_chart(popular_activities)
+        render_activities_chart(popular_activities, activities_mapping)
         c1a,c1b,c1c = st.columns([1,1,1])
 
         #May reset activity or use the one selected
@@ -93,7 +122,8 @@ with st.expander('Interactive activities charts', expanded= True):
     with c2:
         #Set unselected activities to grey opacity
         unselected_color = "rgba(41, 40, 39,50)"
-        popular_activities['color'] = px.colors.qualitative.Set3[:len(popular_activities)]
+        #popular_activities['color'] = px.colors.qualitative.Set3[:len(popular_activities)]
+        popular_activities['color'] = popular_activities.Activity.map(activities_mapping)
         if selected_activity != [0]:
             popular_activities.loc[~popular_activities.Activity.isin(selected_activity),'color'] = unselected_color
 

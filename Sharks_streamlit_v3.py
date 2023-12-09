@@ -18,4 +18,3 @@ st.set_page_config(page_title="Sharky cruise builder", layout = "wide") # must h
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 
 order_and_hide_pages()
-st.write('test')

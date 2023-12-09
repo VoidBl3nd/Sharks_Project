@@ -37,16 +37,17 @@ with st.expander('Departure country',expanded = True):
 
 #with st.expander('Cruise parameters',expanded = True):
 st.header(':blue[Step 2 :] Tweak cruise  parameters')
-c1,c2,c3 = st.columns([15,2,40])
+c1a,c2a,c3a = st.columns(3)
+c1b,c2b,c3b = st.columns(3)
 popular_activites = extract_popular_activities(activities)
-number_activities = c1.number_input('Number of activities', min_value=1, max_value=5, placeholder= '1-5',value = None)
-type_activities = c1.multiselect('Types of activities', options= popular_activites.Activity.unique().tolist(), placeholder='One or more...')
+number_activities = c1a.number_input('Number of activities', min_value=1, max_value=5, placeholder= '1-5',value = None)
+type_activities = c1b.multiselect('Types of activities', options= popular_activites.Activity.unique().tolist(), placeholder='One or more...')
 #c3.slider('Historical attacks period (included)',min_value= int(sharks.date.dt.year.min()), max_value= int(sharks.date.dt.year.max()), value = [2000,2019])
 #period_start = c1.date_input('Historical Period start', min_value= datetime(int(sharks.date.dt.year.min()),1,1), max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2000,1,1), format = 'DD-MM-YYYY')
 #period_end = c1.date_input('Historical Period end', min_value= period_start, max_value= datetime(int(sharks.date.dt.year.max()),1,1), value = datetime(2019,1,1), format = 'DD-MM-YYYY')
 minyear = 1700
-period_start = c1.selectbox('Historical Period start', options=[*range(minyear, int(sharks.year.max()+1),1)], index = 2019-minyear-9,placeholder='Start year (included)...')
-period_end = c1.selectbox('Historical Period end', options=[*range(period_start, int(sharks.year.max()+1),1)], index = len([*range(period_start, int(sharks.year.max()+1),1)])-1, placeholder='End year (included)...')+1
+period_start = c2a.selectbox('Historical Period start', options=[*range(minyear, int(sharks.year.max()+1),1)], index = 2019-minyear-9,placeholder='Start year (included)...')
+period_end = c2b.selectbox('Historical Period end', options=[*range(period_start, int(sharks.year.max()+1),1)], index = len([*range(period_start, int(sharks.year.max()+1),1)])-1, placeholder='End year (included)...')+1
 
 initialize_state_filters()
 st.session_state['_start_year_'] = period_start
@@ -55,19 +56,11 @@ st.session_state['_number_activities_'] = number_activities
 st.session_state['_type_activities_'] = type_activities
 
 current_selection_size = len(sharks.query("year >= @period_start").query("year <= @period_end"))
-c1.markdown(f'⚠️*Selected period contains, **{current_selection_size}** attacks (**{current_selection_size/len(sharks):.1%}** of the dataset)*') #➡️
-if c1.button('Generate Cruise',type = 'primary', use_container_width=True,):
+c3a.markdown('###')
+c3a.markdown(f'⚠️*Computations will be based on, **{current_selection_size}** ({current_selection_size/len(sharks):.1%}) attacks.*') #➡️
+c3b.markdown('##')
+if c3b.button('Generate Cruise',type = 'primary', use_container_width=True,):
     if type_activities == [] or number_activities == None or st.session_state['_selected_country_'] == 0:
         st.error('Please make sure to select a country, specify the number of activities and select at least one activity before submitting.')
     else:
         switch_page("Cruise visualization")
-
-c3.markdown('###')
-with c3.expander('View historical data distribution:'):
-    #Distribution of attacks over the years (excluding unformatted dates)
-    year_dist = sharks.query('year >= @minyear').groupby(['year']).agg(nbr_attacks = ('date','count')) #sharks['date'].dt.year.value_counts().reset_index()
-    fig = px.bar(year_dist , y='nbr_attacks',title = 'Distribution of the number of sharks attacks over the years', height = 350)
-    st.plotly_chart(fig, use_container_width= True)
-
-    
-    st.markdown(':orange[**Note**: *Only attacks in the selected period range will be showed across the application*]')

@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from streamlit_extras.switch_page_button import switch_page 
 
 from backend.cruise_utils import define_clusters, clean_clusters_centerpoints, compute_maritime_route
-from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves, render_mapbox_cruise
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster
 cluster_minsize = 5 #5 #minimum_number_attacks_within_cluster
@@ -24,39 +24,6 @@ st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_ico
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
 initialize_state_saves()
-
-def render_mapbox_cruise(sharks_selection):
-    style_dict = {'map':"open-street-map",'white':"carto-positron",'dark':"carto-darkmatter",'terrain':"stamen-terrain",'bw':"stamen-toner",'realistic':"white-bg"}
-    mapboxstyle = 'white' #['map','white','dark','terrain','bw','realistic'])
-
-    fig = px.scatter_mapbox(sharks_selection.dropna(subset = 'coordinates'),
-                    lat='latitude',
-                    lon='longitude',
-                    #projection = 'natural earth',
-                    #color = 'cluster',
-                    title = f'Attacks location colored by cluster',
-                    #hover_name = 'cluster',
-                    #hover_data= {'cluster':False, 'cluster_content':True, 'latitude':':.2f','longitude':':.2f'},
-                    height= 1200,
-                    #template= 'plotly_dark',
-                    zoom = 1.45
-                    )
-
-    if style_dict[mapboxstyle] == "white-bg":
-
-        fig.update_layout(mapbox_layers=[{"below": 'traces',
-                                            "sourcetype": "raster",
-                                            "sourceattribution": "United States Geological Survey",
-                                            "source": [
-                                                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"]}])
-
-    fig.update_layout(mapbox_style=style_dict[mapboxstyle],mapbox_center= {'lat':0,'lon':0})
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
-    fig.update_traces(marker=dict(size=7,),
-                    selector=dict(mode='markers'))
-    
-    return fig
 
 if '_selected_country_' not in st.session_state:
     st.info('Please select a departure country in the Home page')
@@ -97,10 +64,10 @@ else:
             #-------------------------------------------------------------
             dfcluster, clusters, results_print = define_clusters(selected_attacks_coordinates, max_km_btwn_points_in_cluster=cluster_distance, min_cluster_size=cluster_minsize)
 
-            with st.sidebar:
-                st.markdown('Dropped entries without coordinates: {}'.format(sharks_selection.filter(['latitude', 'longitude']).isna().any(axis=1).sum()))
-                for i in results_print:
-                    st.markdown(i)
+            #with st.sidebar:
+            #    st.markdown('Dropped entries without coordinates: {}'.format(sharks_selection.filter(['latitude', 'longitude']).isna().any(axis=1).sum()))
+            #    for i in results_print:
+            #        st.markdown(i)
 
             dfCenters = clean_clusters_centerpoints(clusters)
             dfCenters['cluster'] = "Cluster n°" + dfCenters.reset_index()['index'].astype(int).add(1).astype(str)
@@ -159,7 +126,7 @@ else:
                                     'spearfishing':'rgb(128,177,211)','bathing':'rgb(253,180,98)','wading':'rgb(179,222,105)','scuba':'rgb(252,205,229)',
                                     'snorkeling':'rgb(217,217,217)','kayaking':'rgb(188,128,189)',}
             activities_clusters = (selected_clusters).copy()
-            dfActivities_locations = dfCenters.query('cluster.isin(@activities_clusters)')
+            dfActivities_locations = dfCenters.query('cluster.isin(@activities_clusters)').copy()
             activities_types = st.session_state['_type_activities_']
             dfActivities_locations['activity'] = ""
             for idx, row in dfActivities_locations.iterrows():
@@ -188,14 +155,19 @@ else:
 
             #Export Cruise / History
             #-------------------------------------------------------------
-            st.session_state['_cruise_bookmarks_']['temp_save'] = dict()
-            st.session_state['_cruise_bookmarks_']['temp_save']['departure_country'] = st.session_state['_selected_country_']
-            st.session_state['_cruise_bookmarks_']['temp_save']['period_start'] = st.session_state['_start_year_']
-            st.session_state['_cruise_bookmarks_']['temp_save']['period_end'] = st.session_state['_end_year_']
-            st.session_state['_cruise_bookmarks_']['temp_save']['cruise_stages'] = st.session_state['_number_activities_']
-            st.session_state['_cruise_bookmarks_']['temp_save']['waypoints'] = waypoints
-            st.session_state['_cruise_bookmarks_']['temp_save']['dfActivities_locations'] = dfActivities_locations
+            save_cruise = False
             if c5.button('💾Save', use_container_width=True):
+               save_cruise = True 
+            else:
+                st.session_state['_cruise_bookmarks_']['temp_save'] = dict()
+                st.session_state['_cruise_bookmarks_']['temp_save']['departure_country'] = st.session_state['_selected_country_']
+                st.session_state['_cruise_bookmarks_']['temp_save']['departure_port'] = departure_port
+                st.session_state['_cruise_bookmarks_']['temp_save']['period_start'] = st.session_state['_start_year_']
+                st.session_state['_cruise_bookmarks_']['temp_save']['period_end'] = st.session_state['_end_year_']
+                st.session_state['_cruise_bookmarks_']['temp_save']['cruise_stages'] = st.session_state['_number_activities_']
+                st.session_state['_cruise_bookmarks_']['temp_save']['waypoints'] = waypoints
+                st.session_state['_cruise_bookmarks_']['temp_save']['dfActivities_locations'] = dfActivities_locations
+            if save_cruise:
                 switch_page('Cruise save')
             if c5.button('🔖Bookmarks', use_container_width=True):
                 switch_page('Bookmarks')

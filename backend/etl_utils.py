@@ -4,7 +4,7 @@ import pandas as pd
 #--------------------------------------------------------------------------------------
 def extract_body_parts(sharks):
     injury_terms_list = (sharks.Injury.str.split(' ')
-                                    .apply(pd.Series).stack().unique().tolist())
+                                    .apply(lambda x: pd.Series(x, dtype="object")).stack().unique().tolist())
     injury_terms_dict = {}
     for injury_term in injury_terms_list:
         injury_terms_dict[injury_term] = len(sharks[sharks.Injury.str.contains(injury_term, na = False)])
@@ -29,7 +29,7 @@ def extract_activities(sharks):
     s = sharks.copy()
     s['Activity_list'] = s.Activity.str.split(' ').fillna('-')
     activity_terms_list = (sharks.Activity.str.split(' ')
-                                    .apply(pd.Series).stack().unique().tolist())
+                                    .apply(lambda x: pd.Series(x, dtype="object")).stack().unique().tolist())
     activity_terms_dict = {}
     for activity_term in activity_terms_list:
         #activity_terms_dict[activity_term] = len(sharks[sharks.Activity.str.contains(activity_term, na = False)])
@@ -38,7 +38,7 @@ def extract_activities(sharks):
     activities = pd.DataFrame(activity_terms_dict.items(), columns = ['activity_term','occurences']).sort_values('occurences', ascending = False)
     #Remove expected stop words
     activities['len'] = activities.activity_term.str.len()
-    activities = activities.query('len > 3')
+    activities = activities.query('len > 3').copy()
     activities_dict = activities.set_index('activity_term').to_dict()['occurences']
 
     #Only keep root activities

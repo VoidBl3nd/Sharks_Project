@@ -17,6 +17,7 @@ else:
     #Save the bookmark
     st.session_state['_cruise_bookmarks_'][save_name] = dict()
     st.session_state['_cruise_bookmarks_'][save_name]['departure_country'] = st.session_state['_cruise_bookmarks_']['temp_save']['departure_country']
+    st.session_state['_cruise_bookmarks_'][save_name]['departure_port'] = st.session_state['_cruise_bookmarks_']['temp_save']['departure_port']
     st.session_state['_cruise_bookmarks_'][save_name]['period_start'] = st.session_state['_cruise_bookmarks_']['temp_save']['period_start']
     st.session_state['_cruise_bookmarks_'][save_name]['period_end'] = st.session_state['_cruise_bookmarks_']['temp_save']['period_end']
     st.session_state['_cruise_bookmarks_'][save_name]['cruise_stages'] = st.session_state['_cruise_bookmarks_']['temp_save']['cruise_stages']

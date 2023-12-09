@@ -4,6 +4,9 @@ import plotly.express as px
 from st_pages import Page, show_pages, add_page_title, hide_pages, Section
 from streamlit_plotly_events import plotly_events
 
+#activities_mapping = {'surfing': 'rgb(141,211,199)', 'swimming': 'rgb(255,255,179)', 'fishing': 'rgb(190,186,218)', 'diving': 'rgb(251,128,114)', 'spearfishing': 'rgb(128,177,211)', 'bathing': 'rgb(253,180,98)', 'wading': 'rgb(179,222,105)', 'scuba': 'rgb(252,205,229)', 'snorkeling': 'rgb(217,217,217)', 'kayaking': 'rgb(188,128,189)'}
+activities_mapping = {'surfing': 'rgb(255,255,179)', 'swimming': 'rgb(190,186,218)', 'fishing': 'rgb(251,128,114)', 'diving': 'rgb(128,177,211)', 'spearfishing': 'rgb(253,180,98)', 'bathing': 'rgb(179,222,105)', 'wading': 'rgb(252,205,229)', 'scuba': 'rgb(217,217,217)', 'snorkeling': 'rgb(188,128,189)', 'kayaking': 'rgb(204,235,197)'}
+
 def get_session_state(var_list:list):
     var_data_list = []
     for var in var_list:
@@ -38,9 +41,9 @@ def initialize_state_saves():
         if session_name not in st.session_state:
             st.session_state[session_name] = {}
 
-def build_activities_chart(popular_activities):
+def build_activities_chart(popular_activities, activities_mapping):
     fig = px.bar(popular_activities.sort_values('occurence',ascending = False),x = 'Activity',y = 'occurence', title = 'Most popular activities leading to attacks',
-                color= 'Activity', color_discrete_sequence=px.colors.qualitative.Set3)
+                color= 'Activity', color_discrete_sequence=popular_activities.assign(color = popular_activities.Activity.map(activities_mapping)).sort_values('occurence',ascending = False).color)#px.colors.qualitative.Set3)
     fig.update_layout(showlegend=False) # Remove legend
     fig.update_layout(paper_bgcolor="rgba(0, 0, 0, 0)",
                       plot_bgcolor='rgba(0,0,0,0)',
@@ -64,16 +67,17 @@ def build_activities_map(popular_activities,sharks, unselected_color, show_unsel
     #Map the color for the points
     sharks = pd.merge(sharks, popular_activities.rename(columns = {'Activity':'Activity_term'}).filter(['Activity_term','color']), on = 'Activity_term',how = 'left')
     sharks.loc[sharks.color == unselected_color,'Activity_term'] = "other"
-
+    
     #Construct plot
     fig = px.scatter_geo(pd.concat([sharks.query('Activity_term != "other"').sort_values('occurence', ascending = False),sharks.query('Activity_term == "other"')], ignore_index=True),
                         color = 'Activity_term', lat = 'latitude',lon = 'longitude',#height = 1000,
-                        color_discrete_sequence=popular_activities.sort_values(['color','occurence']).color.tolist()) #sorting to ensure good color association
+                        color_discrete_sequence= pd.concat([sharks.query('Activity_term != "other"').sort_values('occurence', ascending = False),sharks.query('Activity_term == "other"')], ignore_index=True).color.unique().tolist())
+                        #popular_activities.sort_values(['color','occurence']).color.tolist()) #sorting to ensure good color association
     
     fig.update_layout(margin=dict(l=0,r=0,b=0,t=0),paper_bgcolor="rgba(0, 0, 0, 0)") # Remove margin and make remaining background transparent
     #fig.update_layout(legend=dict(orientation="h",yanchor="bottom",y=1.1,xanchor="right",x=1))
     fig.update_geos(showcoastlines=True, coastlinecolor = '#afe3e0',showland=True, landcolor='#76b0a6',showocean=True, oceancolor= '#50545c') #map color
-    fig.update_traces(marker=dict(line=dict(width=1, color="Black"))) #marker border
+    fig.update_traces(marker=dict(size = 10,line=dict(width=2, color="Black"))) #marker border
     fig.update_layout(geo=dict(bgcolor= 'rgba(0,0,0,0)')) #Color when zoom out of map
 
     if show_unselected:
@@ -83,10 +87,10 @@ def build_activities_map(popular_activities,sharks, unselected_color, show_unsel
 
     return fig
 
-def render_activities_chart(df):
+def render_activities_chart(df, activities_mapping):
     #Select a country (only if no country yet selected)
     #---------------------------------------------------
-    fig = build_activities_chart(df)
+    fig = build_activities_chart(df, activities_mapping)
     bar_selection = plotly_events(fig, select_event=True, key=f"_activity_selector_")
     if bar_selection != []:
         st.session_state['_selected_activity_'] = bar_selection[0]['x']
@@ -95,6 +99,39 @@ def render_activities_chart(df):
         need_update = False
 
     return need_update
+
+def render_mapbox_cruise(sharks_selection):
+    style_dict = {'map':"open-street-map",'white':"carto-positron",'dark':"carto-darkmatter",'terrain':"stamen-terrain",'bw':"stamen-toner",'realistic':"white-bg"}
+    mapboxstyle = 'white' #['map','white','dark','terrain','bw','realistic'])
+
+    fig = px.scatter_mapbox(sharks_selection.dropna(subset = 'coordinates'),
+                    lat='latitude',
+                    lon='longitude',
+                    #projection = 'natural earth',
+                    #color = 'cluster',
+                    title = f'Attacks location colored by cluster',
+                    #hover_name = 'cluster',
+                    #hover_data= {'cluster':False, 'cluster_content':True, 'latitude':':.2f','longitude':':.2f'},
+                    height= 1200,
+                    #template= 'plotly_dark',
+                    zoom = 1.45
+                    )
+
+    if style_dict[mapboxstyle] == "white-bg":
+
+        fig.update_layout(mapbox_layers=[{"below": 'traces',
+                                            "sourcetype": "raster",
+                                            "sourceattribution": "United States Geological Survey",
+                                            "source": [
+                                                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"]}])
+
+    fig.update_layout(mapbox_style=style_dict[mapboxstyle],mapbox_center= {'lat':0,'lon':0})
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    fig.update_traces(marker=dict(size=7,),
+                    selector=dict(mode='markers'))
+    
+    return fig
 
 def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise save"]):
     add_page_title()

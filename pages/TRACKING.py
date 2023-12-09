@@ -3,8 +3,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-
-from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, activities_mapping
 from backend.etl_utils import extract_popular_activities
 
 var_list = get_session_state(['transformed_data/sharks','generated_data/business','generated_data/tracking', 'transformed_data/activities_words'])
@@ -39,8 +38,8 @@ c2.plotly_chart(fig, use_container_width= True)
 
 #region ->Successful Activities
 popular_activities = extract_popular_activities(activities)
-popular_activities['color'] = px.colors.qualitative.Set3[:len(popular_activities)]
-print(popular_activities)
+#popular_activities['color'] = px.colors.qualitative.Set3[1:len(popular_activities)+1]
+popular_activities['color'] = popular_activities.Activity.map(activities_mapping)
 random_activities = popular_activities.sample(5).reset_index(drop = True)
 for activity in random_activities.Activity.unique():
     random_activities.loc[random_activities.Activity == activity, 'occurences'] = np.random.randint(2,25)
@@ -48,8 +47,6 @@ for activity in random_activities.Activity.unique():
 fig = px.pie(random_activities,
              values='occurences', names='Activity', title = 'Repartition of sucessful activities', height = figs_height,
              color_discrete_sequence=random_activities.sort_values('occurences',ascending = False).color)
-print(random_activities)
-print(random_activities.sort_values('occurences',ascending = True).color)#
 fig.update_traces(hoverinfo='label+percent+value', textinfo='label+percent', textfont_size=20, marker=dict(line=dict(color='#000000', width=1)))
 
 c2.plotly_chart(fig, use_container_width= True)

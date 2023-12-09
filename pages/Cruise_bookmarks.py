@@ -6,18 +6,21 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_extras.switch_page_button import switch_page 
 
-from backend.crui import define_clusters, clean_clusters_centerpoints, compute_maritime_route
-from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves
-from pages.CRUISE_new import render_mapbox_cruise
+from backend.cruise_utils import define_clusters, clean_clusters_centerpoints, compute_maritime_route
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves, render_mapbox_cruise
 
 df_countries =pd.read_csv('input_data/plotly_countries_and_codes.xls').filter(['COUNTRY','CODE']).assign(selected = False)
 var_list = get_session_state(['transformed_data/sharks', 'transformed_data/activities_words'])
 sharks, activities = var_list[0], var_list[1]
 
 #Initialize Streamlit
-st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
+try:
+    st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
+except:
+    pass
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
+initialize_state_saves()
 
 #Select book mark
 
@@ -35,6 +38,7 @@ else:
     #Retrieve cruise
     #-------------------------------------------------------------
     departure_country = st.session_state['_cruise_bookmarks_'][selected_bookmark]['departure_country']
+    departure_port = st.session_state['_cruise_bookmarks_'][selected_bookmark]['departure_port']
     period_start = st.session_state['_cruise_bookmarks_'][selected_bookmark]['period_start']
     period_end = st.session_state['_cruise_bookmarks_'][selected_bookmark]['period_end']
     cruise_stages = st.session_state['_cruise_bookmarks_'][selected_bookmark]['cruise_stages']
@@ -44,9 +48,6 @@ else:
 
     # Display cruise
     #-------------------------------------------------------------
-    departure_port = dfPorts.query('Country == @departure_country').sample(1)
-    departure_lat = departure_port.Latitude.values[0]
-    departure_lon = departure_port.Longitude.values[0]
 
     c1,c2,c3,c4 = st.columns([2,2,2,1])
     c1.info(f'Parameters : \n- **{cruise_stages}** activities among :  {",".join(st.session_state["_type_activities_"])} \n - Cruise path based on data from *{period_start}* to *{period_end}* ')
