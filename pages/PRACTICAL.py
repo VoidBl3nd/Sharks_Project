@@ -26,7 +26,7 @@ with st.sidebar:
     with st.expander('View historical data distribution:'):
         #Distribution of attacks over the years (excluding unformatted dates)
         year_dist = sharks.query('year >= @minyear').groupby(['year']).agg(nbr_attacks = ('date','count')) #sharks['date'].dt.year.value_counts().reset_index()
-        fig = px.bar(year_dist , y='nbr_attacks',title = 'Distribution of the number of sharks attacks over the years', height = 350)
+        fig = px.bar(year_dist , y='nbr_attacks',title = 'Distribution of the number of shark attacks over the years', height = 350)
         st.plotly_chart(fig, use_container_width= True)
 
 initial_update = False
@@ -60,7 +60,7 @@ c1,c2 = st.columns(2)
 #region -> Distribution of attacks over the months (excluding unformatted dates)
 month_order = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 month_dist = sharks.assign(month = sharks.date.dt.month_name()).groupby(['month']).agg(nbr_attacks = ('month','count'))
-fig = px.bar(month_dist , y='nbr_attacks',title = 'Distribution of the number of sharks attacks over the months',
+fig = px.bar(month_dist , y='nbr_attacks',title = 'Distribution of the number of shark attacks over the months',
              color_discrete_sequence=px.colors.qualitative.Set3)
 fig.update_xaxes(categoryorder='array', categoryarray= month_order)
 
@@ -72,7 +72,7 @@ time_dist = sharks.time.groupby(sharks.time).size()
 time_dist.index = pd.PeriodIndex("01-01-2001 "+ time_dist.index.astype(str), freq = 'T')
 time_dist = time_dist.resample('30T').sum().rename('nbr_attacks').reset_index()
 time_dist.time = time_dist.time.dt.strftime('%H:%M')
-fig = px.bar(time_dist, x= 'time',y = 'nbr_attacks', title = 'Distribution of the number of sharks attacks accross a day (30 mins interval)',
+fig = px.bar(time_dist, x= 'time',y = 'nbr_attacks', title = 'Distribution of the number of shark attacks accross a day (30 mins intervals)',
              color_discrete_sequence=px.colors.qualitative.Set3)
 
 c2.plotly_chart(fig, use_container_width= True)
@@ -80,7 +80,7 @@ c2.plotly_chart(fig, use_container_width= True)
 
 #region -> Distribution of attacks accross genders
 sex_dist = sharks.groupby('Sex').Sex.count().rename('nbr_attacks').reset_index()
-fig = px.pie(sex_dist, values='nbr_attacks', names='Sex', title = 'Repartition of attacks accross genders',
+fig = px.pie(sex_dist, values='nbr_attacks', names='Sex', title = 'Repartition of shark attacks accross genders',
              color_discrete_sequence=px.colors.qualitative.Set3)
 fig.update_traces(hoverinfo='label+percent+value', textinfo='label+percent', textfont_size=20,
                   marker=dict(line=dict(color='#000000', width=1)))
@@ -89,7 +89,7 @@ c1.plotly_chart(fig, use_container_width= True)
 #endregion
 
 #region -> Popularity of body parts
-fig = px.bar(body_parts.assign(injury_term = body_parts.injury_term.str.capitalize()).drop(body_parts[body_parts.injury_term.isin(['left','right'])].index).sort_values('occurences',ascending = False).head(12),y = 'injury_term',x = 'occurences', orientation = 'h', title = 'Appearance of the different "Body part" terms in the Injury attribute',
+fig = px.bar(body_parts.assign(injury_term = body_parts.injury_term.str.capitalize()).drop(body_parts[body_parts.injury_term.isin(['left','right'])].index).sort_values('occurences',ascending = False).head(12),y = 'injury_term',x = 'occurences', orientation = 'h', title = 'Appearance of the "Body parts" among the shark attacks\' descriptions',
              color= 'injury_term', color_discrete_sequence=[px.colors.qualitative.Set3[0]],)
 #fig.update_layout(yaxis={'categoryorder':'total ascending'})
 fig.update_layout(showlegend=False)
