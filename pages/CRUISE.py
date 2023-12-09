@@ -7,7 +7,7 @@ from datetime import date
 
 
 from backend.Sharks_streamlit_utils_v1 import get_session_state
-from backend.Sharks_utils_v1 import compute_maritime_route, define_clusters, clean_clusters_centerpoints
+from backend.cruise_utils import compute_maritime_route, define_clusters, clean_clusters_centerpoints
 
 #Filter year
 #Filter area

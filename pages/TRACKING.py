@@ -4,7 +4,8 @@ import streamlit as st
 import plotly.express as px
 
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages
+from backend.etl_utils import extract_popular_activities
 
 var_list = get_session_state(['transformed_data/sharks','generated_data/business','generated_data/tracking', 'transformed_data/activities_words'])
 sharks, businness, tracking, activities = var_list[0], var_list[1].sort_values('date'), var_list[2], var_list[3]
@@ -15,7 +16,7 @@ st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_ico
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
 
-st.title('Business Tracker')
+#st.title('Business Tracker')
 st.divider()
 c1,ch, c2 = st.columns([20,1,10])
 

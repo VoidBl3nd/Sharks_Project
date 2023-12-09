@@ -17,32 +17,26 @@ def get_session_state(var_list:list):
 
     return var_data_list
 
-def extract_popular_activities(activities):
-    #popular_activites = activities.head(30).copy().extensions.explode().reset_index()
-    #popular_activites[['Activity','occurence']] = popular_activites.extensions.str.split('(', expand = True)
-    #popular_activites.occurence = popular_activites.occurence.str.replace(')', '', regex = True)
-    #popular_activites = popular_activites.dropna().astype({'occurence':int})
-    #popular_activites = (popular_activites
-    #                    .drop('index', axis = 1)
-    #                    .drop_duplicates()
-    #                    .sort_values('occurence', ascending = False)
-    #                    .drop(popular_activites[popular_activites.Activity.isin(['boardin','sharks','surface','walking','shupwreck'])].index)
-    #                    .head(11)
-    #                    .copy()
-    #                    .reset_index(drop = True))
-    popular_activites = (activities.drop(activities[activities.activity_term.isin(['water','shark','from','standing','boarding','boat','body','fell','free','with','into','overboard','capsized','sharks','boogie','fish','ship','ship','after','surf','floating','treading','board','overboard'])].index)
-                        .head(10)
-                        .reset_index()
-                        .rename(columns = {'activity_term':'Activity','occurences':'occurence'})
-                        .filter(['Activity','occurence']))
-    return popular_activites
-
 def initialize_state_activities():
     """Initializes all Session State variables"""
 
     for session_name in ['_selected_activity_']:
         if session_name not in st.session_state:
             st.session_state[session_name] = 0
+
+def initialize_state_filters():
+    """Initializes all Session State variables"""
+
+    for session_name in ['_start_year_','_end_year_','_number_activities_','_type_activities_']:
+        if session_name not in st.session_state:
+            st.session_state[session_name] = 0
+
+def initialize_state_saves():
+    """Initializes all Session State variables"""
+
+    for session_name in ['_cruise_bookmarks_',]:
+        if session_name not in st.session_state:
+            st.session_state[session_name] = {}
 
 def build_activities_chart(popular_activities):
     fig = px.bar(popular_activities.sort_values('occurence',ascending = False),x = 'Activity',y = 'occurence', title = 'Most popular activities leading to attacks',
@@ -102,13 +96,6 @@ def render_activities_chart(df):
 
     return need_update
 
-def initialize_state_filters():
-    """Initializes all Session State variables"""
-
-    for session_name in ['_start_year_','_end_year_','_number_activities_','_type_activities_']:
-        if session_name not in st.session_state:
-            st.session_state[session_name] = 0
-
 def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise save"]):
     add_page_title()
     show_pages(
@@ -128,10 +115,3 @@ def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Crui
     )
 
     hide_pages(hidden_pages)
-
-def initialize_state_saves():
-    """Initializes all Session State variables"""
-
-    for session_name in ['_cruise_bookmarks_',]:
-        if session_name not in st.session_state:
-            st.session_state[session_name] = {}

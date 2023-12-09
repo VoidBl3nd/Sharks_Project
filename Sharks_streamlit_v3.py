@@ -10,7 +10,6 @@ from datetime import datetime, date
 import matplotlib.pyplot as plt
 
 from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages
-from backend.Sharks_utils_v1 import compute_maritime_route, define_clusters, clean_clusters_centerpoints
 
 sharks = get_session_state(['transformed_data/sharks'])[0]
 

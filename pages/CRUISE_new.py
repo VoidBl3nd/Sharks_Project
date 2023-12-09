@@ -6,7 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_extras.switch_page_button import switch_page 
 
-from backend.Sharks_utils_v1 import define_clusters, clean_clusters_centerpoints, compute_maritime_route
+from backend.cruise_utils import define_clusters, clean_clusters_centerpoints, compute_maritime_route
 from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster

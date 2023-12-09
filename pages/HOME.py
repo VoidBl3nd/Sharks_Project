@@ -4,8 +4,9 @@ import plotly.express as px
 from datetime import datetime
 from streamlit_extras.switch_page_button import switch_page 
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, initialize_state_filters, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, initialize_state_filters, order_and_hide_pages
 from backend.plotly_event import initialize_state, build_plotly_chart, render_plotly_chart
+from backend.etl_utils import extract_popular_activities
 
 df_countries =pd.read_csv('input_data/plotly_countries_and_codes.xls').filter(['COUNTRY','CODE']).assign(selected = False)
 var_list = get_session_state(['transformed_data/sharks', 'transformed_data/activities_words'])

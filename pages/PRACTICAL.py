@@ -2,11 +2,11 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 
-from backend.Sharks_streamlit_utils_v1 import get_session_state, extract_popular_activities, build_activities_map, render_activities_chart, initialize_state_activities, order_and_hide_pages
+from backend.Sharks_streamlit_utils_v1 import get_session_state, build_activities_map, render_activities_chart, initialize_state_activities, order_and_hide_pages
+from backend.etl_utils import extract_popular_activities, extract_activities, extract_body_parts
 
-var_list = get_session_state(['transformed_data/sharks', 'transformed_data/bodyparts_words', 'transformed_data/activities_words'])
-sharks, body_parts, activities = var_list[0], var_list[1], var_list[2]
-popular_activities = extract_popular_activities(activities)
+var_list = get_session_state(['transformed_data/sharks'])
+sharks = var_list[0]
 
 if '_start_year_' in st.session_state and '_end_year_' in st.session_state:
     period_start = st.session_state['_start_year_']
@@ -15,13 +15,16 @@ else:
     period_start = 2010
     period_end = 2020
 sharks = sharks.query("year >= @period_start").query("year <= @period_end").reset_index(drop = True).copy()
+activities = extract_activities(sharks)
+popular_activities = extract_popular_activities(activities)
+body_parts = extract_body_parts(sharks)
 
 #Initialize Streamlit
 st.set_page_config(page_title="Sharky cruise builder", layout = "wide", page_icon= '🦈') # must happen before any streamlit code /!\
 st.markdown('<style>div.block-container{padding-top:3rem;}</style>', unsafe_allow_html=True) # remove blank top space
 order_and_hide_pages()
 
-st.title('Historical data information',) # #Practical information about past attacks
+#st.title('Historical data information',) # #Practical information about past attacks
 st.divider()
 c1,c2 = st.columns(2)
 
