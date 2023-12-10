@@ -112,6 +112,9 @@ def render_mapbox_cruise(sharks_selection):
                     title = f'Attacks location colored by cluster',
                     #hover_name = 'cluster',
                     #hover_data= {'cluster':False, 'cluster_content':True, 'latitude':':.2f','longitude':':.2f'},
+                    hover_data = {'date':True,'Activity':True,'Sex':True,'Injury':True},
+                    #color = 'selection',
+                    #color_discrete_sequence= ['#afb0b3','#4287f5'],
                     height= 1200,
                     #template= 'plotly_dark',
                     zoom = 1.45

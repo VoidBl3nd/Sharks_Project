@@ -59,6 +59,9 @@ else:
             #-------------------------------------------------------------
             sharks_selection = sharks.query("year >= @period_start").query("year <= @period_end").copy()
             selected_attacks_coordinates = sharks_selection.filter(['latitude', 'longitude']).dropna().values
+            #sharks_selection = sharks.copy()
+            #sharks_selection['selection'] = 'excluded'
+            #sharks_selection.loc[(sharks_selection.year >= period_start) & (sharks_selection.year <= period_start),'selection'] = 'selected'
 
             #Generate clusters & their center point
             #-------------------------------------------------------------
