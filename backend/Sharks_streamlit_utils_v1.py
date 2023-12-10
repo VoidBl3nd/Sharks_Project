@@ -133,8 +133,9 @@ def render_mapbox_cruise(sharks_selection):
     
     return fig
 
-def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise save"]):
-    add_page_title()
+def order_and_hide_pages(hidden_pages = ["Cruise visualization","Homepage","Cruise save"], add_title = True):
+    if add_title:
+        add_page_title()
     show_pages(
         [
             Page("Sharks_streamlit_v3.py", "Homepage", "📈"),

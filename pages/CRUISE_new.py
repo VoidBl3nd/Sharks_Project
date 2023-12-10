@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from streamlit_extras.switch_page_button import switch_page 
 
 from backend.cruise_utils import define_clusters, clean_clusters_centerpoints, compute_maritime_route
-from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves, render_mapbox_cruise
+from backend.Sharks_streamlit_utils_v1 import get_session_state, order_and_hide_pages, initialize_state_saves, render_mapbox_cruise, activities_mapping
 
 cluster_distance = 10 #10 #km : maximum_distance_within_cluster
 cluster_minsize = 5 #5 #minimum_number_attacks_within_cluster
@@ -121,10 +121,8 @@ else:
             
             #Activities
             #-------------------------------------------------------------
-            activities_color_map = {'Departure':'yellow',
-                                    'surfing':'rgb(141,211,199)','swimming':'rgb(255,255,179)','fishing':'rgb(190,186,218)','diving':'rgb(251,128,114)',
-                                    'spearfishing':'rgb(128,177,211)','bathing':'rgb(253,180,98)','wading':'rgb(179,222,105)','scuba':'rgb(252,205,229)',
-                                    'snorkeling':'rgb(217,217,217)','kayaking':'rgb(188,128,189)',}
+            activities_color_map = {'Departure':'yellow'}
+            activities_color_map.update(activities_mapping)
             activities_clusters = (selected_clusters).copy()
             dfActivities_locations = dfCenters.query('cluster.isin(@activities_clusters)').copy()
             activities_types = st.session_state['_type_activities_']
